@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repositório Terminal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS para a estética de terminal */
+        :root {
+            --background-color: #0c0c0c;
+            --text-color: #00ff41;
+            --link-color: #00ff41;
+            --button-bg: #1e1e1e;
+            --button-border: #00ff41;
+            --button-hover-bg: #00ff41;
+            --button-hover-color: #0c0c0c;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            line-height: 1.4;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        #terminal {
+            border: 2px solid var(--text-color);
+            padding: 1rem;
+            min-height: 80vh;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.4);
+            position: relative;
+        }
+
+        #output {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .prompt {
+            color: var(--text-color);
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.5rem;
+            background-color: var(--text-color);
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+            margin-left: 5px;
+        }
+
+        @keyframes blink {
+            from, to {
+                background-color: transparent;
+            }
+            50% {
+                background-color: var(--text-color);
+            }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 8px 4px;
+            text-align: left;
+            border-bottom: 1px dashed rgba(0, 255, 65, 0.3);
+        }
+
+        th {
+            font-weight: bold;
+        }
+        
+        td.file-size {
+            text-align: right;
+            padding-right: 15px;
+        }
+
+        .download-button {
+            background-color: var(--button-bg);
+            color: var(--link-color);
+            border: 1px solid var(--button-border);
+            padding: 5px 10px;
+            text-decoration: none;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .download-button:hover {
+            background-color: var(--button-hover-bg);
+            color: var(--button-hover-color);
+        }
+        
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="terminal">
+        <div id="output"></div>
+        <span class="prompt">></span><span class="cursor"></span>
+    </div>
+
+    <script>
+        // JavaScript para buscar e exibir os arquivos do GitHub
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // ===================================================================
+            // CONFIGURAÇÃO: Altere os valores abaixo com seu usuário e repositório
+            // ===================================================================
+            const githubUsername = 'FloMaskine'; // <- SEU NOME DE USUÁRIO DO GITHUB
+            const githubRepo = 'flomaskine.github.io';     // <- NOME DO SEU REPOSITÓRIO
+            // ===================================================================
+
+            const outputElement = document.getElementById('output');
+            const repoUrl = `https://github.com/${githubUsername}/${githubRepo}`;
+            const apiUrl = `https://api.github.com/repos/${githubUsername}/${githubRepo}/contents`;
+
+            const welcomeMessage = [
+                `Iniciando sistema...`,
+                `Conectando a api.github.com... Conexão estabelecida.`,
+                `Repositório alvo: ${githubUsername}/${githubRepo}`,
+                `URL do Repositório: <a href="${repoUrl}" target="_blank">${repoUrl}</a>`,
+                `Executando comando: 'ls -l'`,
+                `-----------------------------------------------------------------`
+            ];
+
+            // Função para "digitar" o texto inicial
+            async function typeWelcomeMessage() {
+                for (let i = 0; i < welcomeMessage.length; i++) {
+                    await typeLine(welcomeMessage[i]);
+                }
+                fetchRepoFiles();
+            }
+
+            function typeLine(line) {
+                return new Promise(resolve => {
+                    outputElement.innerHTML += `<span class="prompt">></span> ${line}\n`;
+                    setTimeout(resolve, 100); // Atraso entre as linhas
+                });
+            }
+
+            // Função para buscar e listar os arquivos
+            async function fetchRepoFiles() {
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        throw new Error(`Erro na rede: ${response.status} - ${response.statusText}. Verifique o nome do usuário e do repositório.`);
+                    }
+                    const files = await response.json();
+
+                    displayFiles(files);
+
+                } catch (error) {
+                    console.error('Erro ao buscar arquivos do repositório:', error);
+                    outputElement.innerHTML += `\n<span class="prompt">></span> <span style="color: #ff4d4d;">Erro: ${error.message}</span>\n`;
+                }
+            }
+
+            // Função para formatar o tamanho do arquivo
+            function formatSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            // Função para buscar a data da última modificação
+            async function getLastModifiedDate(filePath) {
+                try {
+                    const commitApiUrl = `https://api.github.com/repos/${githubUsername}/${githubRepo}/commits?path=${encodeURIComponent(filePath)}&page=1&per_page=1`;
+                    const response = await fetch(commitApiUrl);
+                     if (!response.ok) {
+                        return 'N/A';
+                    }
+                    const commits = await response.json();
+                    if (commits.length > 0) {
+                        const date = new Date(commits[0].commit.author.date);
+                        return date.toLocaleDateString('pt-BR', { year: 'numeric', month: 'short', day: 'numeric' });
+                    }
+                    return 'N/A';
+                } catch (error) {
+                    console.error(`Erro ao buscar data para ${filePath}:`, error);
+                    return 'N/A';
+                }
+            }
+
+            // Função para exibir a lista de arquivos
+            async function displayFiles(files) {
+                const filesOnly = files.filter(file => file.type === 'file');
+                
+                let tableHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nome do Arquivo</th>
+                                <th>Última Modificação</th>
+                                <th class="file-size">Tamanho</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                outputElement.innerHTML += tableHTML;
+
+                const tableBody = document.createElement('tbody');
+                
+                for (const file of filesOnly) {
+                    const date = await getLastModifiedDate(file.path);
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${file.name}</td>
+                        <td>${date}</td>
+                        <td class="file-size">${formatSize(file.size)}</td>
+                        <td><a href="${file.download_url}" class="download-button" download>Download</a></td>
+                    `;
+                    tableBody.appendChild(row);
+                }
+                
+                outputElement.querySelector('table').appendChild(tableBody);
+                outputElement.innerHTML += `
+                        </tbody>
+                    </table>
+                    \n<span class="prompt">></span> Fim da listagem.\n
+                `;
+            }
+
+            // Inicia o processo
+            typeWelcomeMessage();
+        });
+    </script>
+
+</body>
+</html>
