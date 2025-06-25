@@ -2,9 +2,9 @@
 #!/bin/bash
 
 # Install Fish
-sudo apt-add-repository ppa:fish-shell/release-3
-sudo apt-get update
-sudo apt-get install fish
+apt-add-repository ppa:fish-shell/release-3
+apt-get update
+apt-get install fish
 
 # Set Fish as default (optional)
 echo /usr/local/bin/fish | sudo tee -a /etc/shells
