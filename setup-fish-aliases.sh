@@ -36,5 +36,5 @@ echo "Configuração concluída."
 sleep 2s
 echo "Reinicie o terminal Fish para aplicar as alterações." 
 sleep 2s
-sed -i 's/\r$//' setup-fish-aliases.sh
+dos2unix setup-fish-aliases.sh
 reset
