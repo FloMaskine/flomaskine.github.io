@@ -197,7 +197,8 @@
                     const commits = await response.json();
                     if (commits.length > 0) {
                         const date = new Date(commits[0].commit.author.date);
-                        return date.toLocaleDateString('pt-BR', { year: 'numeric', month: 'short', day: 'numeric' });
+                        // LINHA ALTERADA: Adicionado hour e minute para exibir o horário
+                        return date.toLocaleString('pt-BR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
                     }
                     return 'N/A';
                 } catch (error) {
