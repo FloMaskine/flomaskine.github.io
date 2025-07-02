@@ -4,7 +4,7 @@
 
 ## 📝 Índice
 
-  * [Visão Geral](https://www.google.com/search?q=%23-vis%C3%A3o-geral)
+  * [Visão Geral](## Visão Geral)
   * [Como Obter os Arquivos](https://www.google.com/search?q=%23-como-obter-os-arquivos)
       * [Opção 1: Projeto Completo (git)](https://www.google.com/search?q=%23op%C3%A7%C3%A3o-1-clonar-o-projeto-completo-com-git)
       * [Opção 2: Arquivo Específico (curl / wget)](https://www.google.com/search?q=%23op%C3%A7%C3%A3o-2-baixar-arquivos-espec%C3%ADficos)
