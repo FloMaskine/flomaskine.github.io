@@ -4,12 +4,11 @@
 
 ## 📝 Índice
 
-  * [Visão Geral](## Visão Geral)
-  * [Como Obter os Arquivos](https://www.google.com/search?q=%23-como-obter-os-arquivos)
-      * [Opção 1: Projeto Completo (git)](https://www.google.com/search?q=%23op%C3%A7%C3%A3o-1-clonar-o-projeto-completo-com-git)
-      * [Opção 2: Arquivo Específico (curl / wget)](https://www.google.com/search?q=%23op%C3%A7%C3%A3o-2-baixar-arquivos-espec%C3%ADficos)
-  * [Licença](https://www.google.com/search?q=%23-licen%C3%A7a)
-
+  * [Visão Geral](#visao-geral)
+  * [Como Obter os Arquivos](#como-obter-os-arquivos)
+      * [Opção 1: Projeto Completo (git)]
+      * [Opção 2: Arquivo Específico (wget)]
+  
 ## 📖 Visão Geral
 
 Este repositório contém uma coleção de scripts, ferramentas e automações projetadas para simplificar tarefas diversas.
@@ -29,31 +28,22 @@ git clone https://github.com/FloMaskine/Flowery-Machine.git
 
 ### Opção 2: Baixar Arquivos Específicos
 
-Se você precisa de apenas um arquivo, sem o resto do projeto, pode usar os comandos `curl` ou `wget`.
+Se você precisa de apenas um arquivo, sem o resto do projeto, pode usar o comando `wget`.
 
 \<details\>
-\<summary\>\<strong\>Clique aqui para ver os comandos com \<code\>curl\</code\> e \<code\>wget\</code\>\</strong\>\</summary\>
+\<summary\>\<strong\>Clique aqui para ver o comando com \<code\>wget\</code\>\</strong\>\</summary\>
 
-Substitua `nome_do_arquivo.js` pelo caminho e nome do arquivo que deseja baixar.
-
-#### Usando `curl`:
-
-```bash
-# Baixa o arquivo e o salva localmente
-curl -L -o nome_do_arquivo.js https://raw.githubusercontent.com/FloMaskine/Flowery-Machine/main/nome_do_arquivo.js
-```
+Substitua `/pasta/arquivo` pelo caminho e nome do arquivo que deseja baixar.
 
 #### Usando `wget`:
 
 ```bash
-# Baixa o arquivo e o renomeia para o nome desejado
-wget -O nome_do_arquivo.js https://raw.githubusercontent.com/FloMaskine/Flowery-Machine/main/nome_do_arquivo.js
+# Baixa o arquivo
+wget  https://flomaskine.github.io/pasta/arquivo
+# Torna o arquivo executável
+chmod +x nome-do-arquivo.sh
+# Executa o arquivo
+./nome-do-arquivo
 ```
 
 \</details\>
-
-## 📜 Licença
-
-Este projeto é distribuído sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
-
-*(Nota: Você precisará adicionar um arquivo de licença, como o MIT, ao seu projeto para que este link funcione.)*
