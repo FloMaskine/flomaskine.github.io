@@ -288,9 +288,12 @@
                     `;
                 }
 
-                // Separar diretórios de arquivos
-                const directories = contents.filter(item => item.type === 'dir');
-                const files = contents.filter(item => item.type === 'file');
+                // Definir itens a serem ocultados
+                const hiddenItems = ['.vscode', 'index.html'];
+
+                // Filtrar e separar diretórios de arquivos
+                const directories = contents.filter(item => item.type === 'dir' && !hiddenItems.includes(item.name));
+                const files = contents.filter(item => item.type === 'file' && !hiddenItems.includes(item.name));
 
                 // Exibir diretórios primeiro
                 for (const dir of directories) {
@@ -298,7 +301,8 @@
                         <tr>
                             <td><a href="#" class="directory-name" data-path="${dir.path}">${dir.name}/</a></td>
                             <td>Diretório</td>
-                            <td>N/A</td> <td class="file-size">-</td>
+                            <td>N/A</td>
+                            <td class="file-size">-</td>
                             <td>-</td>
                         </tr>
                     `;
@@ -344,11 +348,7 @@
 
                 outputElement.scrollTop = outputElement.scrollHeight; // Rolar para o final
             }
-
-            // Inicia o processo
-            typeWelcomeMessage();
-        });
-    </script>
+</script>
 
 </body>
 </html>
