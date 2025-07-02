@@ -39,6 +39,12 @@
             position: relative;
         }
 
+        #header { /* Novo estilo para o cabeçalho */
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px dashed rgba(0, 255, 65, 0.3);
+        }
+
         #output {
             white-space: pre-wrap;
             word-wrap: break-word;
@@ -149,7 +155,7 @@
 <body>
 
     <div id="terminal">
-        <div id="output"></div>
+        <div id="header"></div> <div id="output"></div>
         <span class="prompt">></span><span class="cursor"></span>
     </div>
 
@@ -158,6 +164,7 @@
             const githubUsername = 'FloMaskine';
             const githubRepo = 'flomaskine.github.io';
 
+            const headerElement = document.getElementById('header'); // NOVO ELEMENTO
             const outputElement = document.getElementById('output');
             const repoBaseUrl = `https://github.com/${githubUsername}/${githubRepo}`;
             const apiBaseUrl = `https://api.github.com/repos/${githubUsername}/${githubRepo}/contents`;
@@ -173,8 +180,10 @@
             ];
 
             async function typeWelcomeMessage() {
+                // Renderiza a mensagem de boas-vindas no headerElement
                 for (let i = 0; i < welcomeMessage.length; i++) {
-                    await typeLine(welcomeMessage[i]);
+                    // Usa headerElement em vez de outputElement
+                    headerElement.innerHTML += `<span class="prompt">></span> ${welcomeMessage[i]}\n`; 
                 }
                 // Adiciona o listener para o evento popstate para navegação do navegador
                 window.addEventListener('popstate', handlePopState);
@@ -183,6 +192,7 @@
                 loadContent(initialPath);
             }
 
+            // Esta função agora é usada apenas para o output principal
             function typeLine(line) {
                 return new Promise(resolve => {
                     outputElement.innerHTML += `<span class="prompt">></span> ${line}\n`;
@@ -301,8 +311,7 @@
                         <tr>
                             <td><a href="#" class="directory-name" data-path="${dir.path}">${dir.name}/</a></td>
                             <td>Diretório</td>
-                            <td>N/A</td>
-                            <td class="file-size">-</td>
+                            <td>N/A</td> <td class="file-size">-</td>
                             <td>-</td>
                         </tr>
                     `;
@@ -348,7 +357,11 @@
 
                 outputElement.scrollTop = outputElement.scrollHeight; // Rolar para o final
             }
-</script>
+
+            // Inicia o processo
+            typeWelcomeMessage();
+        });
+    </script>
 
 </body>
 </html>
