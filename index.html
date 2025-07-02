@@ -182,12 +182,9 @@
             async function typeWelcomeMessage() {
                 // Renderiza a mensagem de boas-vindas no headerElement
                 for (let i = 0; i < welcomeMessage.length; i++) {
-                    // Usa headerElement em vez de outputElement
-                    headerElement.innerHTML += `<span class="prompt">></span> ${welcomeMessage[i]}\n`; 
+                    headerElement.innerHTML += `<span class="prompt">></span> ${welcomeMessage[i]}<br>`;
                 }
-                // Adiciona o listener para o evento popstate para navegação do navegador
                 window.addEventListener('popstate', handlePopState);
-                // Carrega o conteúdo inicial ou o que está na URL
                 const initialPath = window.location.hash.substring(1) || '';
                 loadContent(initialPath);
             }
@@ -290,7 +287,7 @@
                     tableHTML += `
                         <tr>
                             <td><a href="#" class="back-button" data-path="${parentPath}">..</a></td>
-                            <td>(Pasta Pai)</td>
+                            <td>(Pasta Mãe)</td>
                             <td>N/A</td>
                             <td class="file-size">-</td>
                             <td>-</td>
