@@ -4,8 +4,8 @@
 
 ## 📝 Índice
 
-  * [Visão Geral](#visao-geral)
-  * [Como Obter os Arquivos](#como-obter-os-arquivos)
+  * [Visão Geral](#visaogeral)
+  * [Como Obter os Arquivos](#comoobterosarquivos)
       * [Opção 1: Projeto Completo (git)]
       * [Opção 2: Arquivo Específico (wget)]
   
