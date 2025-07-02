@@ -4,11 +4,11 @@
 
 ## 📝 Índice
 
-  * [Visão Geral]: (#visao-geral)
-  * [Como Obter os Arquivos]: (#como-obter-os-arquivos)
-      * [Opção 1: Projeto Completo (git)]
-      * [Opção 2: Arquivo Específico (wget)]
-  
+  - [Visão Geral](visao-geral)
+  - [Como Obter os Arquivos](-como-obter-os-arquivos)
+      - [Opção 1: Clonar o Projeto Completo];
+      - [Opção 2: Baixar Arquivos Específicos];
+
 ## 📖 Visão Geral
 
 Este repositório contém uma coleção de scripts, ferramentas e automações projetadas para simplificar tarefas diversas.
