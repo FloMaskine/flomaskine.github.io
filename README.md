@@ -23,7 +23,7 @@ Este é o método recomendado para ter acesso a todos os arquivos e receber atua
 
 ```bash
 # Clone o repositório para um novo diretório chamado 'Flowery-Machine'
-git clone https://github.com/FloMaskine/Flowery-Machine.git
+git clone https://github.com/FloMaskine/flomaskine.github.io.git
 ```
 
 ### Opção 2: Baixar Arquivos Específicos
@@ -43,7 +43,7 @@ wget  https://flomaskine.github.io/pasta/arquivo
 # Torna o arquivo executável
 chmod +x nome-do-arquivo.sh
 # Executa o arquivo
-./nome-do-arquivo
+./nome-do-arquivo.sh
 ```
 
 \</details\>
