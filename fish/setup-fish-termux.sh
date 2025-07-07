@@ -5,6 +5,9 @@ CONFIG_DIR="$HOME/.config/fish"
 CONFIG_FILE="$CONFIG_DIR/config.fish"
 
 echo "--- Iniciando a configuração do Fish Shell no Termux ---"
+echo "--- Instalando dependências ---"
+# instala Which, um utilitário para localizar programas no PATH
+pkg install -y which
 
 # 1. Instalar o Fish Shell no Termux
 echo "1. Instalando o Fish Shell..."
