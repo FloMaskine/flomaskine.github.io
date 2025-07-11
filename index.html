@@ -59,7 +59,8 @@
             const headerElement = document.getElementById('header');
             const searchInput = document.getElementById('search-input');
             const contentArea = document.getElementById('content-area');
-            
+            const DEFAULT_HIDDEN_ITEMS = ['.git', '.gitignore', '.vscode', 'README.md', 'index.html'];
+
             let fileSystem = {};
             let metadataCache = {};
 
@@ -73,7 +74,9 @@
             function parseMetadata(readmeContent) {
                 const metadata = { files: {}, hidden: [] };
                 const commentMatch = readmeContent.match(/<!--([\s\S]*?)-->/);
-                if (!commentMatch) return metadata;
+                if (!commentMatch) {
+                    return metadata;
+                }
 
                 const config = commentMatch[1];
                 const hiddenMatch = config.match(/@hidden:\s*\[([^\]]*)\]/);
@@ -100,22 +103,28 @@
                     if (!response.ok) throw new Error(`Erro de rede: ${response.status}`);
                     const data = await response.json();
 
-                    let fs = { _type: 'dir', _files: [], _dirs: {} };
+                    const fs = { _type: 'dir', _files: [], _dirs: {} };
+
                     for (const item of data.tree) {
                         const pathParts = item.path.split('/');
                         let currentLevel = fs;
-                        for (let i = 0; i < pathParts.length; i++) {
+
+                        // Traverse the path for all but the last part
+                        for (let i = 0; i < pathParts.length - 1; i++) {
                             const part = pathParts[i];
-                            if (item.type === 'tree') {
-                                currentLevel._dirs[part] = currentLevel._dirs[part] || { _type: 'dir', _files: [], _dirs: {} };
-                                currentLevel = currentLevel._dirs[part];
-                            } else if (item.type === 'blob') {
-                                if (i === pathParts.length - 1) {
-                                    currentLevel._files.push(part);
-                                }
+                            if (!currentLevel._dirs[part]) {
+                                currentLevel._dirs[part] = { _type: 'dir', _files: [], _dirs: {} };
                             }
+                            currentLevel = currentLevel._dirs[part];
+                        }
+
+                        // Handle the last part (the file)
+                        if (item.type === 'blob') {
+                            const fileName = pathParts[pathParts.length - 1];
+                            currentLevel._files.push(fileName);
                         }
                     }
+                    
                     fileSystem = fs;
                     navigateToPath('');
                 } catch (error) {
@@ -185,17 +194,20 @@
                 }
 
                 const metadata = await getMetadataForPath(path);
-                
+                const hiddenItems = [...DEFAULT_HIDDEN_ITEMS, ...metadata.hidden];
+
                 contentArea.innerHTML = '';
                 contentArea.appendChild(renderBreadcrumbs(path));
 
                 let content = '<ul>';
                 for (const dirName in currentDir._dirs) {
-                    const newPath = path ? `${path}/${dirName}` : dirName;
-                    content += `<li><a href="#" class="dir-link" data-path="${newPath}">${dirName}/</a></li>`;
+                    if (!hiddenItems.includes(dirName)) {
+                        const newPath = path ? `${path}/${dirName}` : dirName;
+                        content += `<li><a href="#" class="dir-link" data-path="${newPath}">${dirName}/</a></li>`;
+                    }
                 }
                 for (const fileName of currentDir._files) {
-                    if (!metadata.hidden.includes(fileName)) {
+                    if (!hiddenItems.includes(fileName)) {
                         const description = metadata.files[fileName] || '';
                         const downloadUrl = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main/${path ? path + '/' : ''}${fileName}`;
                         content += `<li><a href="${downloadUrl}" download>${fileName}</a> - <em>${description}</em></li>`;
@@ -235,9 +247,10 @@
                 
                 async function searchRecursively(directory, currentPath) {
                     const metadata = await getMetadataForPath(currentPath);
-                    
+                    const hiddenItems = [...DEFAULT_HIDDEN_ITEMS, ...metadata.hidden];
+
                     for (const fileName of directory._files) {
-                        if (!metadata.hidden.includes(fileName) && fileName.toLowerCase().includes(query.toLowerCase())) {
+                        if (!hiddenItems.includes(fileName) && fileName.toLowerCase().includes(query.toLowerCase())) {
                             foundFiles.push({
                                 name: fileName,
                                 path: currentPath,
@@ -247,8 +260,10 @@
                     }
                     
                     for (const dirName in directory._dirs) {
-                        const newPath = currentPath ? `${currentPath}/${dirName}` : dirName;
-                        await searchRecursively(directory._dirs[dirName], newPath);
+                        if (!hiddenItems.includes(dirName)) {
+                            const newPath = currentPath ? `${currentPath}/${dirName}` : dirName;
+                            await searchRecursively(directory._dirs[dirName], newPath);
+                        }
                     }
                 }
 

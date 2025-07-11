@@ -5,6 +5,7 @@
         "**/.hg": true,
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
+        "**/*.crswap": true,
         "**/.retool_types/**": true,
         "**/*tsconfig.json": true,
         ".cache": true,

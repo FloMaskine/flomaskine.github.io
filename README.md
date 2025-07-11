@@ -30,8 +30,8 @@ git clone https://github.com/FloMaskine/flomaskine.github.io.git
 
 Se você precisa de apenas um arquivo, sem o resto do projeto, pode usar o comando `wget`.
 
-\<details\>
-\<summary\>\<strong\>Clique aqui para ver o comando com \<code\>wget\</code\>\</strong\>\</summary\>
+<details>
+<summary><strong>Clique aqui para ver o comando com <code>wget</code></strong></summary>
 
 Substitua `/pasta/arquivo` pelo caminho e nome do arquivo que deseja baixar.
 
@@ -46,4 +46,8 @@ chmod +x nome-do-arquivo.sh
 ./nome-do-arquivo.sh
 ```
 
-\</details\>
+</details>
+
+<!--
+@hidden: [".git", ".vscode", "README.md", "index.html"]
+-->
