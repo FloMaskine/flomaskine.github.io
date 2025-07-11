@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌸 Flowery Machine</title>
+    <title>🌸 Flowery Machine - Scripts</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 
     <style>
-        /* CSS para a estética de terminal */
         :root {
             --background-color: #0c0c0c;
             --text-color: #00ff41;
@@ -18,7 +17,7 @@
             --button-border: #df03fc;
             --button-hover-bg: #00ff41;
             --button-hover-color: #df03fc;
-            --dir-color: #55aaff; /* Nova cor para diretórios */
+            --dir-color: #55aaff;
         }
 
         body {
@@ -33,25 +32,48 @@
 
         #terminal {
             border: 2px solid var(--text-color);
-            padding: 1rem;
+            padding: 1.5rem;
             min-height: 80vh;
             box-shadow: 0 0 15px rgba(0, 255, 65, 0.4);
-            position: relative;
         }
 
-        #header { /* Novo estilo para o cabeçalho */
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px dashed rgba(0, 255, 65, 0.3);
-        }
-
-        #output {
+        .header-text {
             white-space: pre-wrap;
             word-wrap: break-word;
+            border-bottom: 1px dashed rgba(0, 255, 65, 0.3);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
         }
-
+        
         .prompt {
             color: var(--text-color);
+        }
+
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Search input styled as a command line */
+        .search-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem; /* Espaçamento antes da linha pontilhada */
+            padding-bottom: 1.5rem; /* Espaçamento para a linha pontilhada */
+            border-bottom: 1px dashed rgba(0, 255, 65, 0.3); /* Linha pontilhada */
+        }
+
+        #search-input {
+            background-color: transparent;
+            border: none;
+            color: var(--text-color);
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            flex-grow: 1;
+            outline: none;
         }
 
         .cursor {
@@ -65,33 +87,20 @@
         }
 
         @keyframes blink {
-            from, to {
-                background-color: transparent;
-            }
-            50% {
-                background-color: var(--text-color);
-            }
+            50% { background-color: transparent; }
         }
 
+        /* File list table */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 1rem;
+            margin-top: 1.5rem; /* Espaçamento após a linha pontilhada */
         }
 
         th, td {
             padding: 8px 4px;
             text-align: left;
             border-bottom: 1px dashed rgba(0, 255, 65, 0.3);
-        }
-
-        th {
-            font-weight: bold;
-        }
-        
-        td.file-size {
-            text-align: right;
-            padding-right: 15px;
         }
 
         .download-button {
@@ -110,148 +119,70 @@
             background-color: var(--button-hover-bg);
             color: var(--button-hover-color);
         }
-        
-        a {
-            color: var(--link-color);
-            text-decoration: none;
-        }
-        
-        a:hover {
-            text-decoration: underline;
-        }
-
-        /* Estilo para nomes de diretórios */
-        .directory-name {
-            color: var(--dir-color); /* Cor azul para diretórios */
-            cursor: pointer;
-            text-decoration: none; /* Remover sublinhado padrão */
-        }
-
-        .directory-name:hover {
-            text-decoration: underline; /* Adicionar sublinhado ao passar o mouse */
-        }
-
-        /* Estilo para o botão de voltar */
-        .back-button {
-            background-color: var(--button-bg);
-            color: var(--dir-color);
-            border: 1px solid var(--dir-color);
-            padding: 5px 10px;
-            text-decoration: none;
-            font-family: 'VT323', monospace;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.3s, color 0.3s;
-            margin-bottom: 1rem;
-            display: inline-block; /* Para que o margin-bottom funcione */
-        }
-
-        .back-button:hover {
-            background-color: var(--dir-color);
-            color: var(--background-color);
-        }
     </style>
 </head>
 <body>
 
     <div id="terminal">
-        <div id="header"></div> <div id="output"></div>
-        <span class="prompt">></span><span class="cursor"></span>
+        <div id="header" class="header-text"></div>
+        
+        <div class="search-container">
+            <span class="prompt">> find </span>
+            <input type="text" id="search-input" autofocus />
+            <span class="cursor"></span>
+        </div>
+
+        <div id="file-list-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome do Arquivo</th>
+                        <th>Descrição</th>
+                        <th>Última Modificação</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="file-list-body">
+                    <!-- Rows will be inserted here -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const githubUsername = 'FloMaskine';
             const githubRepo = 'flomaskine.github.io';
+            const filesPath = 'fish';
 
-            const headerElement = document.getElementById('header'); // NOVO ELEMENTO
-            const outputElement = document.getElementById('output');
-            const repoBaseUrl = `https://github.com/${githubUsername}/${githubRepo}`;
-            const apiBaseUrl = `https://api.github.com/repos/${githubUsername}/${githubRepo}/contents`;
+            const headerElement = document.getElementById('header');
+            const fileListBody = document.getElementById('file-list-body');
+            const searchInput = document.getElementById('search-input');
 
-            let currentPath = ''; // Armazena o caminho do diretório atual
-
-            const welcomeMessage = [
-                `Iniciando sistema...`,
-                `Conectando a api.github.com... Conexão estabelecida.`,
-                `Repositório alvo: ${githubUsername}/${githubRepo}`,
-                `URL do Repositório: <a href="${repoBaseUrl}" target="_blank">${repoBaseUrl}</a>`,
-                `-----------------------------------------------------------------`
+            const headerContent = [
+                `Sistema de Arquivos da Flowery Machine`,
+                `Repositório: <a href="https://github.com/${githubUsername}/${githubRepo}" target="_blank">${githubUsername}/${githubRepo}</a>`,
+                `Use o comando 'find' para buscar scripts...`
             ];
+            headerElement.innerHTML = headerContent.map(line => `<span class="prompt">></span> ${line}`).join('<br>');
 
-            async function typeWelcomeMessage() {
-                // Renderiza a mensagem de boas-vindas no headerElement
-                for (let i = 0; i < welcomeMessage.length; i++) {
-                    headerElement.innerHTML += `<span class="prompt">></span> ${welcomeMessage[i]}<br>`;
+            const files = [
+                {
+                    name: 'install.sh',
+                    description: 'Script de instalação universal para Fish Shell.',
+                },
+                {
+                    name: 'functions.fish',
+                    description: 'Arquivo com funções e aliases para o Fish.',
                 }
-                window.addEventListener('popstate', handlePopState);
-                const initialPath = window.location.hash.substring(1) || '';
-                loadContent(initialPath);
-            }
-
-            // Esta função agora é usada apenas para o output principal
-            function typeLine(line) {
-                return new Promise(resolve => {
-                    outputElement.innerHTML += `<span class="prompt">></span> ${line}\n`;
-                    outputElement.scrollTop = outputElement.scrollHeight; // Rolar para o final
-                    setTimeout(resolve, 100);
-                });
-            }
-
-            // Função principal para carregar o conteúdo (arquivos e pastas)
-            async function loadContent(path = '') {
-                outputElement.innerHTML = ''; // Limpa o output antes de carregar novo conteúdo
-                currentPath = path;
-                updateUrl(path); // Atualiza a URL do navegador
-
-                await typeLine(`Executando comando: 'ls -l ${path || '.'}'`); // Mostra o comando de listagem
-                outputElement.innerHTML += `\n`; // Nova linha para separar o comando da listagem
-
-                try {
-                    const apiUrl = `${apiBaseUrl}${path ? '/' + path : ''}`;
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) {
-                        throw new Error(`Erro na rede: ${response.status} - ${response.statusText}. Verifique o nome do usuário e do repositório, ou o caminho '${path}'.`);
-                    }
-                    const contents = await response.json();
-
-                    displayContents(contents);
-
-                } catch (error) {
-                    console.error('Erro ao buscar conteúdos do repositório:', error);
-                    outputElement.innerHTML += `\n<span class="prompt">></span> <span style="color: #ff4d4d;">Erro: ${error.message}</span>\n`;
-                }
-            }
-
-            // Atualiza a URL do navegador com o caminho atual
-            function updateUrl(path) {
-                const newHash = path ? `#${path}` : '';
-                history.pushState({ path: path }, '', newHash);
-            }
-
-            // Lidar com o botão de voltar/avançar do navegador
-            function handlePopState(event) {
-                const pathFromState = event.state ? event.state.path : '';
-                if (currentPath !== pathFromState) {
-                    loadContent(pathFromState);
-                }
-            }
-
-
-            function formatSize(bytes) {
-                if (bytes === 0) return '-'; // Diretórios não têm tamanho via API de contents
-                const k = 1024;
-                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-            }
+            ];
 
             async function getLastModifiedDate(filePath) {
                 try {
                     const commitApiUrl = `https://api.github.com/repos/${githubUsername}/${githubRepo}/commits?path=${encodeURIComponent(filePath)}&page=1&per_page=1`;
                     const response = await fetch(commitApiUrl);
                     if (!response.ok) {
-                        // console.warn(`Aviso: Não foi possível buscar commits para ${filePath}. Status: ${response.status} - ${response.statusText}`);
+                        console.warn(`Aviso: Não foi possível buscar commits para ${filePath}. Status: ${response.status} - ${response.statusText}`);
                         return 'N/A';
                     }
                     const commits = await response.json();
@@ -266,99 +197,38 @@
                 }
             }
 
-            async function displayContents(contents) {
-                let tableHTML = `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>Tipo</th>
-                                <th>Última Modificação</th>
-                                <th class="file-size">Tamanho</th>
-                                <th>Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-                
-                // Botão de voltar
-                if (currentPath !== '') {
-                    const parentPath = currentPath.substring(0, currentPath.lastIndexOf('/'));
-                    tableHTML += `
-                        <tr>
-                            <td><a href="#" class="back-button" data-path="${parentPath}">..</a></td>
-                            <td>(Pasta Mãe)</td>
-                            <td>N/A</td>
-                            <td class="file-size">-</td>
-                            <td>-</td>
-                        </tr>
-                    `;
+            async function renderFiles(filter = '') {
+                fileListBody.innerHTML = ''; // Clear the table body
+                const filteredFiles = files.filter(file => file.name.toLowerCase().includes(filter.toLowerCase()));
+
+                if (filteredFiles.length === 0) {
+                    fileListBody.innerHTML = '<tr><td colspan="4">Nenhum arquivo encontrado.</td></tr>'; // colspan changed to 4
+                    return;
                 }
 
-                // Definir itens a serem ocultados
-                const hiddenItems = ['.vscode', 'index.html', 'README.md'];
+                for (const file of filteredFiles) {
+                    const downloadUrl = `https://raw.githubusercontent.com/${githubUsername}/${githubRepo}/main/${filesPath}/${file.name}`;
+                    const fullFilePath = `${filesPath}/${file.name}`;
+                    const lastModified = await getLastModifiedDate(fullFilePath);
 
-                // Filtrar e separar diretórios de arquivos
-                const directories = contents.filter(item => item.type === 'dir' && !hiddenItems.includes(item.name));
-                const files = contents.filter(item => item.type === 'file' && !hiddenItems.includes(item.name));
-
-                // Exibir diretórios primeiro
-                for (const dir of directories) {
-                    tableHTML += `
-                        <tr>
-                            <td><a href="#" class="directory-name" data-path="${dir.path}">${dir.name}/</a></td>
-                            <td>Diretório</td>
-                            <td>N/A</td> <td class="file-size">-</td>
-                            <td>-</td>
-                        </tr>
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${file.name}</td>
+                        <td>${file.description}</td>
+                        <td>${lastModified}</td>
+                        <td><a href="${downloadUrl}" class="download-button" download>Download</a></td>
                     `;
+                    fileListBody.appendChild(row);
                 }
-
-                // Exibir arquivos
-                for (const file of files) {
-                    const date = await getLastModifiedDate(file.path);
-                    tableHTML += `
-                        <tr>
-                            <td>${file.name}</td>
-                            <td>Arquivo</td>
-                            <td>${date}</td>
-                            <td class="file-size">${formatSize(file.size)}</td>
-                            <td><a href="${file.download_url}" class="download-button" download>Download</a></td>
-                        </tr>
-                    `;
-                }
-                
-                tableHTML += `
-                        </tbody>
-                    </table>
-                    \n<span class="prompt">></span> Fim da listagem.\n
-                `;
-                outputElement.innerHTML += tableHTML;
-
-                // Adicionar listeners de clique para pastas e botão de voltar
-                document.querySelectorAll('.directory-name').forEach(link => {
-                    link.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const newPath = e.target.dataset.path;
-                        loadContent(newPath);
-                    });
-                });
-
-                document.querySelectorAll('.back-button').forEach(link => {
-                    link.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const newPath = e.target.dataset.path;
-                        loadContent(newPath);
-                    });
-                });
-
-                outputElement.scrollTop = outputElement.scrollHeight; // Rolar para o final
             }
 
-            // Inicia o processo
-            typeWelcomeMessage();
+            searchInput.addEventListener('input', (e) => {
+                renderFiles(e.target.value);
+            });
+
+            // Initial render
+            renderFiles();
         });
-        
     </script>
 
 </body>
