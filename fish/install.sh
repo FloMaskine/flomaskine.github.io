@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script universal para instalar e configurar o Fish Shell.
-# Detecta automaticamente o gerenciador de pacotes (apt, pacman, dnf, zypper, termux).
+# Adaptado para funcionar em ambientes com e sem privilégios de sudo.
 
 # --- Configuração ---
 CONFIG_DIR="$HOME/.config/fish"
@@ -13,73 +13,84 @@ print_info() {
     echo "INFO: $1"
 }
 
+print_warning() {
+    echo "AVISO: $1"
+}
+
 print_error() {
     echo "ERRO: $1" >&2
     exit 1
 }
 
-# --- Detecção de Ambiente e Gerenciador de Pacotes ---
+# --- Detecção de Ambiente ---
 PM=""
-if command -v apt &> /dev/null; then
-    PM="apt"
-    print_info "Detectado gerenciador de pacotes APT (Debian/Ubuntu)."
-elif command -v pacman &> /dev/null; then
-    PM="pacman"
-    print_info "Detectado gerenciador de pacotes PACMAN (Arch Linux)."
-elif command -v dnf &> /dev/null; then
-    PM="dnf"
-    print_info "Detectado gerenciador de pacotes DNF (Fedora/CentOS)."
-elif command -v zypper &> /dev/null; then
-    PM="zypper"
-    print_info "Detectado gerenciador de pacotes ZYPPER (openSUSE)."
-elif test -d /data/data/com.termux; then
-    PM="termux"
-    print_info "Detectado ambiente Termux."
-else
-    print_error "Nenhum gerenciador de pacotes suportado foi encontrado."
-fi
+# A detecção do PM ainda é útil para mensagens de ajuda.
+if command -v apt &> /dev/null; then PM="apt";
+elif command -v pacman &> /dev/null; then PM="pacman";
+elif command -v dnf &> /dev/null; then PM="dnf";
+elif command -v zypper &> /dev/null; then PM="zypper";
+elif test -d /data/data/com.termux; then PM="termux"; fi
 
-# --- Lógica de Instalação ---
+# --- Lógica Principal ---
 
-# 1. Instalar o Fish Shell
+# 1. Verificar a instalação do Fish Shell
 print_info "Verificando a instalação do Fish Shell..."
 if ! command -v fish &> /dev/null; then
-    print_info "Instalando o Fish Shell via $PM..."
-    case $PM in
-        "apt")    sudo apt update && sudo apt install -y fish ;;
-        "pacman") sudo pacman -S --noconfirm fish ;;
-        "dnf")    sudo dnf install -y fish ;;
-        "zypper") sudo zypper install -y fish ;;
-        "termux") pkg update -y && pkg upgrade -y && pkg install -y fish ;;
-    esac
-    [ $? -ne 0 ] && print_error "Falha ao instalar o Fish Shell."
-    print_info "Fish Shell instalado com sucesso."
+    print_warning "O Fish Shell não está instalado."
+    # Verifica se o sudo está disponível
+    if command -v sudo &> /dev/null; then
+        print_info "Tentando instalar o Fish Shell via $PM com sudo..."
+        case $PM in
+            "apt")    sudo apt update && sudo apt install -y fish ;;
+            "pacman") sudo pacman -S --noconfirm fish ;;
+            "dnf")    sudo dnf install -y fish ;;
+            "zypper") sudo zypper install -y fish ;;
+            "termux") pkg update -y && pkg upgrade -y && pkg install -y fish ;; # Termux não usa sudo
+            *)        print_error "Gerenciador de pacotes '$PM' não suportado para instalação automática." ;;
+        esac
+        [ $? -ne 0 ] && print_error "Falha ao instalar o Fish Shell. Peça ajuda a um administrador."
+        print_info "Fish Shell instalado com sucesso."
+    else
+        print_error "O comando 'sudo' não foi encontrado. Por favor, peça a um administrador para instalar o 'fish' no sistema."
+    fi
 else
     print_info "O Fish Shell já está instalado."
 fi
 
-# 2. Definir o Fish como shell padrão
+# 2. Tentar definir o Fish como shell padrão
 FISH_PATH=$(which fish)
 [ -z "$FISH_PATH" ] && print_error "Não foi possível encontrar o executável do Fish no PATH."
 
 if [ "$SHELL" != "$FISH_PATH" ]; then
-    print_info "Definindo o Fish como o shell padrão..."
+    print_info "Tentando definir o Fish como o shell padrão..."
+    # O chsh no Termux não precisa de privilégios especiais
     if [ "$PM" = "termux" ]; then
-        chsh -s "$FISH_PATH" || print_error "Falha ao definir o shell padrão no Termux."
-    else
-        # Para a maioria das distros Linux
-        if ! grep -qF "$FISH_PATH" /etc/shells; then
-            print_info "Adicionando '$FISH_PATH' a /etc/shells."
-            echo "$FISH_PATH" | sudo tee -a /etc/shells > /dev/null
+        chsh -s "$FISH_PATH"
+        if [ $? -eq 0 ]; then
+            print_info "Fish definido como shell padrão. Inicie uma nova sessão para a alteração ter efeito."
+        else
+            print_warning "Falha ao definir o shell padrão no Termux."
         fi
-        chsh -s "$FISH_PATH" || print_error "Falha ao definir o shell padrão. Tente manualmente: chsh -s $FISH_PATH"
+    else
+        # Tenta usar chsh. Se falhar, oferece uma alternativa.
+        chsh -s "$FISH_PATH"
+        if [ $? -ne 0 ]; then
+            print_warning "Não foi possível alterar o shell padrão com 'chsh'. Isso pode ser por falta de permissão ou porque '$FISH_PATH' não está em /etc/shells."
+            print_info "Como alternativa, você pode iniciar o Fish automaticamente adicionando a seguinte linha ao seu arquivo de configuração de shell atual (ex: ~/.bashrc, ~/.zshrc ou ~/.profile):"
+            echo ""
+            echo "  if [ -t 1 ]; then"
+            echo "    exec fish"
+            echo "  fi"
+            echo ""
+        else
+            print_info "Fish definido como shell padrão. Para que a alteração tenha efeito, pode ser necessário fazer logout e login novamente."
+        fi
     fi
-    print_info "Fish definido como shell padrão. Inicie uma nova sessão para a alteração ter efeito."
 else
     print_info "O Fish já é o shell padrão."
 fi
 
-# 3. Configurar o Fish
+# 3. Configurar as funções do Fish (operação a nível de usuário)
 print_info "Configurando o Fish..."
 mkdir -p "$CONFIG_DIR"
 [ ! -f "$FUNCTIONS_SOURCE_FILE" ] && print_error "Arquivo de funções '$FUNCTIONS_SOURCE_FILE' não encontrado."
@@ -93,7 +104,7 @@ fi
 
 {
     echo ""
-    echo "# --- Funções Personalizadas (Última atualização: $(date)) ---"
+    echo "# --- Funções Personalizadas (Instaladas em: $(date)) ---"
     cat "$FUNCTIONS_SOURCE_FILE"
     echo "# --- Fim das Funções ---"
 } >> "$CONFIG_FILE"
