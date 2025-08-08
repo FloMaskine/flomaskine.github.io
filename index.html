@@ -185,6 +185,38 @@
                 return breadcrumbEl;
             }
 
+            
+            async function forceDownload(url, fileName) {
+                const button = document.querySelector(`a.download-button[href="${url}"]`);
+                if (!button) return;
+
+                const originalText = button.textContent;
+                button.textContent = 'Baixando...';
+                button.style.pointerEvents = 'none';
+
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`Erro de rede: ${response.status}`);
+                    const blob = await response.blob();
+                    const blobUrl = window.URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = blobUrl;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(blobUrl);
+                    a.remove();
+                } catch (error) {
+                    console.error('Erro no download:', error);
+                    alert('Falha no download. Verifique o console para mais detalhes.');
+                } finally {
+                    button.textContent = originalText;
+                    button.style.pointerEvents = 'auto';
+                }
+            }
+
             async function navigateToPath(path) {
                 const currentDir = getObjectByPath(path);
                 if (!currentDir) {
@@ -234,7 +266,7 @@
                                 <td>${fileName}</td>
                                 <td><em>${description || 'Arquivo'}</em></td>
                                 <td style="text-align: right;">
-                                    <a href="${downloadUrl}" class="download-button" download="${fileName}">Download</a>
+                                    <a href="${downloadUrl}" class="download-button" data-filename="${fileName}">Download</a>
                                 </td>
                             </tr>`;
                     }
@@ -249,6 +281,13 @@
                     link.addEventListener('click', e => {
                         e.preventDefault();
                         navigateToPath(e.target.dataset.path);
+                    });
+                });
+
+                contentArea.querySelectorAll('.download-button[data-filename]').forEach(button => {
+                    button.addEventListener('click', e => {
+                        e.preventDefault();
+                        forceDownload(e.target.href, e.target.dataset.filename);
                     });
                 });
             }
@@ -308,7 +347,7 @@
                         <td>${file.name}</td>
                         <td>${file.description}</td>
                         <td><a href="#" class="dir-link" data-path="${file.path}">${file.path || 'home'}/</a></td>
-                        <td style="text-align: right;"><a href="${downloadUrl}" class="download-button" download>Download</a></td>
+                        <td style="text-align: right;"><a href="${downloadUrl}" class="download-button" data-filename="${file.name}">Download</a></td>
                     `;
                     resultsBody.appendChild(row);
                 }
@@ -320,8 +359,15 @@
                         navigateToPath(e.target.dataset.path);
                     });
                 });
-            }
 
+                resultsBody.querySelectorAll('.download-button[data-filename]').forEach(button => {
+                    button.addEventListener('click', e => {
+                        e.preventDefault();
+                        forceDownload(e.target.href, e.target.dataset.filename);
+                    });
+                });
+            }
+            
             searchInput.addEventListener('input', (e) => {
                 const query = e.target.value.trim();
                 if (query) {
