@@ -17,6 +17,9 @@ Este repositório contém uma coleção de scripts, ferramentas e automações p
 
 Para começar a usar os scripts, você pode baixá-los diretamente do seu terminal Linux de duas maneiras principais.
 
+### Opção 0: Baixar pelo site.
+Acesse https://flomaskine.github.io/ e baixe os arquivos individualmente ou o diretório. Geralmente é melhor baixar o diretório de cada script pois em alguns existem mais de um arquivo que interagem entre si.
+
 ### Opção 1: Clonar o Projeto Completo (com `git`)
 
 Este é o método recomendado para ter acesso a todos os arquivos e receber atualizações futuras de forma simples (`git pull`).
