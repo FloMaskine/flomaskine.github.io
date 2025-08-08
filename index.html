@@ -199,24 +199,50 @@
                 contentArea.innerHTML = '';
                 contentArea.appendChild(renderBreadcrumbs(path));
 
-                let content = '<ul>';
+                let tableContent = `<table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Descrição</th>
+                            <th style="text-align: right;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
                 for (const dirName in currentDir._dirs) {
                     if (!hiddenItems.includes(dirName)) {
                         const newPath = path ? `${path}/${dirName}` : dirName;
-                        content += `<li><a href="#" class="dir-link" data-path="${newPath}">${dirName}/</a></li>`;
+                        const repoUrl = `https://github.com/${GITHUB_USERNAME}/${GITHUB_REPO}/tree/main/${newPath}`;
+                        const downloadUrl = `https://downgit.github.io/#/home?url=${repoUrl}`;
+                        tableContent += `
+                            <tr>
+                                <td><a href="#" class="dir-link" data-path="${newPath}">${dirName}/</a></td>
+                                <td>Diretório</td>
+                                <td style="text-align: right;">
+                                    <a href="${downloadUrl}" class="download-button" target="_blank">Download ZIP</a>
+                                </td>
+                            </tr>`;
                     }
                 }
+
                 for (const fileName of currentDir._files) {
                     if (!hiddenItems.includes(fileName)) {
                         const description = metadata.files[fileName] || '';
                         const downloadUrl = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main/${path ? path + '/' : ''}${fileName}`;
-                        content += `<li><a href="${downloadUrl}" download>${fileName}</a> - <em>${description}</em></li>`;
+                        tableContent += `
+                            <tr>
+                                <td>${fileName}</td>
+                                <td><em>${description || 'Arquivo'}</em></td>
+                                <td style="text-align: right;">
+                                    <a href="${downloadUrl}" class="download-button" download="${fileName}">Download</a>
+                                </td>
+                            </tr>`;
                     }
                 }
-                content += '</ul>';
+                tableContent += '</tbody></table>';
                 
                 const listEl = document.createElement('div');
-                listEl.innerHTML = content;
+                listEl.innerHTML = tableContent;
                 contentArea.appendChild(listEl);
 
                 contentArea.querySelectorAll('a[data-path]').forEach(link => {
@@ -234,7 +260,7 @@
                             <th>Nome do Arquivo</th>
                             <th>Descrição</th>
                             <th>Diretório</th>
-                            <th>Ação</th>
+                            <th style="text-align: right;">Ação</th>
                         </tr>
                     </thead>
                     <tbody id="search-results-body">
@@ -282,7 +308,7 @@
                         <td>${file.name}</td>
                         <td>${file.description}</td>
                         <td><a href="#" class="dir-link" data-path="${file.path}">${file.path || 'home'}/</a></td>
-                        <td><a href="${downloadUrl}" class="download-button" download>Download</a></td>
+                        <td style="text-align: right;"><a href="${downloadUrl}" class="download-button" download>Download</a></td>
                     `;
                     resultsBody.appendChild(row);
                 }

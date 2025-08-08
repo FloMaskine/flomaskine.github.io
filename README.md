@@ -38,8 +38,10 @@ Substitua `/pasta/arquivo` pelo caminho e nome do arquivo que deseja baixar.
 #### Usando `wget`:
 
 ```bash
+# Baixa o wget
+apt install wget
 # Baixa o arquivo
-wget  https://flomaskine.github.io/pasta/arquivo
+wget  https://flomaskine.github.io/
 # Torna o arquivo executável
 chmod +x nome-do-arquivo.sh
 # Executa o arquivo

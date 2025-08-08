@@ -33,7 +33,32 @@ elif test -d /data/data/com.termux; then PM="termux"; fi
 
 # --- Lógica Principal ---
 
-# 1. Verificar a instalação do Fish Shell
+# 1. Verificar a instalação do 'which' (necessário para 'chsh' e outras verificações)
+if ! command -v which &> /dev/null; then
+    print_warning "O comando 'which' não está instalado."
+    if [ "$PM" = "termux" ]; then
+        print_info "Tentando instalar 'which' via pkg..."
+        pkg install -y which
+        [ $? -ne 0 ] && print_error "Falha ao instalar 'which'. O script não pode continuar."
+    else
+        # Na maioria dos sistemas Linux, 'which' vem pré-instalado.
+        # Se não estiver, o usuário pode precisar de sudo.
+        if command -v sudo &> /dev/null; then
+            print_info "Tentando instalar 'which' via $PM com sudo..."
+            case $PM in
+                "apt")    sudo apt update && sudo apt install -y which ;;
+                "pacman") sudo pacman -S --noconfirm which ;;
+                "dnf")    sudo dnf install -y which ;;
+                "zypper") sudo zypper install -y which ;;
+                *)        print_warning "Não foi possível instalar 'which' automaticamente. O script pode falhar." ;;
+            esac
+        else
+            print_warning "Comando 'sudo' não encontrado. Não é possível instalar 'which' automaticamente."
+        fi
+    fi
+fi
+
+# 2. Verificar a instalação do Fish Shell
 print_info "Verificando a instalação do Fish Shell..."
 if ! command -v fish &> /dev/null; then
     print_warning "O Fish Shell não está instalado."
@@ -57,7 +82,7 @@ else
     print_info "O Fish Shell já está instalado."
 fi
 
-# 2. Tentar definir o Fish como shell padrão
+# 3. Tentar definir o Fish como shell padrão
 FISH_PATH=$(which fish)
 [ -z "$FISH_PATH" ] && print_error "Não foi possível encontrar o executável do Fish no PATH."
 
@@ -90,7 +115,7 @@ else
     print_info "O Fish já é o shell padrão."
 fi
 
-# 3. Configurar as funções do Fish (operação a nível de usuário)
+# 4. Configurar as funções do Fish (operação a nível de usuário)
 print_info "Configurando o Fish..."
 mkdir -p "$CONFIG_DIR"
 [ ! -f "$FUNCTIONS_SOURCE_FILE" ] && print_error "Arquivo de funções '$FUNCTIONS_SOURCE_FILE' não encontrado."
