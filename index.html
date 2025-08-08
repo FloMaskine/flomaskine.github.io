@@ -185,9 +185,8 @@
                 return breadcrumbEl;
             }
 
-            
             async function forceDownload(url, fileName) {
-                const button = document.querySelector(`a.download-button[href="${url}"]`);
+                const button = document.querySelector(`a.download-button[data-url="${url}"]`);
                 if (!button) return;
 
                 const originalText = button.textContent;
@@ -212,8 +211,10 @@
                     console.error('Erro no download:', error);
                     alert('Falha no download. Verifique o console para mais detalhes.');
                 } finally {
-                    button.textContent = originalText;
-                    button.style.pointerEvents = 'auto';
+                    if (button) {
+                        button.textContent = originalText;
+                        button.style.pointerEvents = 'auto';
+                    }
                 }
             }
 
@@ -266,7 +267,7 @@
                                 <td>${fileName}</td>
                                 <td><em>${description || 'Arquivo'}</em></td>
                                 <td style="text-align: right;">
-                                    <a href="${downloadUrl}" class="download-button" data-filename="${fileName}">Download</a>
+                                    <a href="#" class="download-button" data-url="${downloadUrl}" data-filename="${fileName}">Download</a>
                                 </td>
                             </tr>`;
                     }
@@ -287,7 +288,7 @@
                 contentArea.querySelectorAll('.download-button[data-filename]').forEach(button => {
                     button.addEventListener('click', e => {
                         e.preventDefault();
-                        forceDownload(e.target.href, e.target.dataset.filename);
+                        forceDownload(e.target.dataset.url, e.target.dataset.filename);
                     });
                 });
             }
@@ -347,7 +348,7 @@
                         <td>${file.name}</td>
                         <td>${file.description}</td>
                         <td><a href="#" class="dir-link" data-path="${file.path}">${file.path || 'home'}/</a></td>
-                        <td style="text-align: right;"><a href="${downloadUrl}" class="download-button" data-filename="${file.name}">Download</a></td>
+                        <td style="text-align: right;"><a href="#" class="download-button" data-url="${downloadUrl}" data-filename="${file.name}">Download</a></td>
                     `;
                     resultsBody.appendChild(row);
                 }
@@ -363,11 +364,11 @@
                 resultsBody.querySelectorAll('.download-button[data-filename]').forEach(button => {
                     button.addEventListener('click', e => {
                         e.preventDefault();
-                        forceDownload(e.target.href, e.target.dataset.filename);
+                        forceDownload(e.target.dataset.url, e.target.dataset.filename);
                     });
                 });
             }
-            
+
             searchInput.addEventListener('input', (e) => {
                 const query = e.target.value.trim();
                 if (query) {
