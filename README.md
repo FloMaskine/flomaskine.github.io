@@ -17,6 +17,8 @@ Este repositório contém uma coleção de scripts, ferramentas e automações p
 
 Para começar a usar os scripts, você pode baixá-los diretamente do seu terminal Linux de duas maneiras principais.
 
+### Opção 0: Baixar através
+
 ### Opção 1: Clonar o Projeto Completo (com `git`)
 
 Este é o método recomendado para ter acesso a todos os arquivos e receber atualizações futuras de forma simples (`git pull`).
